@@ -3,9 +3,9 @@ import uuid
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
 from django.core.validators import MinValueValidator
+from mptt.models import MPTTModel, TreeForeignKey
 
-
-class Category(models.Model):
+class Category(MPTTModel):
     id = models.UUIDField(
         primary_key=True,
         default=uuid.uuid4,
@@ -25,10 +25,10 @@ class Category(models.Model):
         null=True,
         blank=True
     )
-    lft = models.IntegerField()
-    rgt = models.IntegerField()
-    depth = models.IntegerField()
     is_active = models.BooleanField(default=True)
+
+    class MPTTMeta:
+        order_insertion_by = ['name']
 
     class Meta:
         verbose_name_plural = "Categories"
@@ -57,7 +57,8 @@ class Product(models.Model):
     )
     categories = models.ManyToManyField(
         Category,
-        through='ProductCategory'
+        related_name='products',  # Добавляем related_name
+        blank=True
     )
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
