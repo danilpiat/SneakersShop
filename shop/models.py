@@ -27,8 +27,12 @@ class Category(MPTTModel):
     )
     is_active = models.BooleanField(default=True)
 
+    def get_level(self):
+        return self.level  # Свойство level предоставляется MPTTModel
+
     class MPTTMeta:
         order_insertion_by = ['name']
+        level_attr = 'level'
 
     class Meta:
         verbose_name_plural = "Categories"

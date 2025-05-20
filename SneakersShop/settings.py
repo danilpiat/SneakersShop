@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'mptt',
     'shop',
     'django_extensions',
+    'rest_framework'
 
 ]
 INSTALLED_APPS += ['admin_auto_filters']
