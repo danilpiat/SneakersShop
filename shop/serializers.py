@@ -1,7 +1,21 @@
+import base64
+
 import rest_framework.serializers
 from rest_framework import serializers
 from .models import *
 
+
+class Base64ImageField(serializers.ImageField):
+    def to_representation(self, value):
+        if not value:
+            return None
+
+        try:
+            with open(value.path, 'rb') as image_file:
+                return base64.b64encode(image_file.read()).decode('utf-8')
+        except Exception as e:
+            print(f"Error encoding image: {e}")
+            return None
 
 class CategorySerializer(serializers.ModelSerializer):
     parent_id = serializers.UUIDField(source='parent.id', allow_null=True)
@@ -12,6 +26,7 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'slug', 'parent_id', 'level', 'is_active')
 
 class ProductImageSerializer(serializers.ModelSerializer):
+    image = Base64ImageField()
     class Meta:
         model = ProductImage
         fields = ('image', 'is_main', 'order_index')
@@ -32,6 +47,7 @@ class ProductModelSerializer(serializers.ModelSerializer):
         fields = ('id', 'color', 'sku', 'price', 'sizes', 'images')
 
 class BrandSerializer(serializers.ModelSerializer):
+    logo = Base64ImageField()
     class Meta:
         model = Brand
         fields = ('id', 'name', 'slug', 'logo')
