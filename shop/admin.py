@@ -51,14 +51,14 @@ class ProductModelInline(admin.StackedInline):
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     list_display = ('title', 'base_price', 'is_active', 'created_at')
-    list_filter = ('is_active', 'categories')
+    list_filter = ('is_active', 'categories', 'brand')
     search_fields = ('title', 'description', 'slug')
     inlines = [ProductCategoryInline, ProductModelInline]
     prepopulated_fields = {'slug': ('title',)}
 
     fieldsets = (
         (None, {
-            'fields': ('title', 'slug', 'description')
+            'fields': ('title', 'slug', 'description', 'brand')
         }),
         ('Цены и статус', {
             'fields': ('base_price', 'is_active')
@@ -78,6 +78,20 @@ class ProductImageInline(admin.TabularInline):
     def image_preview(self, obj):
         return format_html('<img src="{}" height="100" />', obj.image.url) if obj.image else '-'
     image_preview.short_description = 'Превью'
+
+@admin.register(Brand)
+class BrandAdmin(admin.ModelAdmin):
+    list_display = ('name', 'slug', 'is_active', 'logo_preview')
+    search_fields = ('name', 'slug')
+    prepopulated_fields = {'slug': ('name',)}
+    readonly_fields = ('logo_preview',)
+    list_filter = ('is_active',)
+
+    def logo_preview(self, obj):
+        if obj.logo:
+            return format_html('<img src="{}" height="50" />', obj.logo.url)
+        return "-"
+    logo_preview.short_description = "Превью логотипа"
 
 @admin.register(ProductModel)
 class ProductModelAdmin(admin.ModelAdmin):
