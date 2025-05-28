@@ -40,6 +40,25 @@ class Category(MPTTModel):
     def __str__(self):
         return self.name
 
+class Brand(models.Model):
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False
+    )
+    name = models.CharField(max_length=100, unique=True)
+    slug = models.SlugField(max_length=100, unique=True)
+    description = models.TextField(blank=True)
+    logo = models.ImageField(
+        upload_to='brand_logos/',
+        null=True,
+        blank=True
+    )
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.name
+
 
 class Product(models.Model):
     id = models.UUIDField(
@@ -51,6 +70,13 @@ class Product(models.Model):
     slug = models.SlugField(
         max_length=255,
         unique=True
+    )
+    brand = models.ForeignKey(
+        Brand,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='products'
     )
     description = models.TextField(blank=True)
     base_price = models.DecimalField(

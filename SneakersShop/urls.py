@@ -25,6 +25,7 @@ from shop.views import *
 router = DefaultRouter()
 router.register(r'categories', CategoryViewSet, basename='category')
 router.register(r'products', ProductViewSet, basename='product')
+router.register(r'brands', BrandViewSet, basename='brand')
 urlpatterns = [
     path('admin/', admin.site.urls),
 ]

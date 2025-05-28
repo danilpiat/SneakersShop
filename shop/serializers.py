@@ -31,6 +31,10 @@ class ProductModelSerializer(serializers.ModelSerializer):
         model = ProductModel
         fields = ('id', 'color', 'sku', 'price', 'sizes', 'images')
 
+class BrandSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Brand
+        fields = ('id', 'name', 'slug', 'logo')
 
 class ProductListSerializer(serializers.ModelSerializer):
     main_image = serializers.SerializerMethodField()
@@ -40,15 +44,25 @@ class ProductListSerializer(serializers.ModelSerializer):
         slug_field='slug'
     )
 
+    brand = BrandSerializer(read_only=True)
+    available_sizes = serializers.SerializerMethodField()  # Добавляем доступные размеры
+
     class Meta:
         model = Product
-        fields = ('id', 'title', 'slug', 'base_price', 'categories', 'main_image')
+        fields = ('id', 'title', 'slug', 'base_price', 'categories', 'main_image', 'brand', 'available_sizes')
 
     def get_main_image(self, obj):
         main_image = obj.models.filter(images__is_main=True).first()
         if main_image:
             return ProductImageSerializer(main_image.images.first()).data
         return None
+
+    def get_available_sizes(self, obj):
+        sizes = set()
+        for product_model in obj.models.all():
+            for size in product_model.sizes.all():
+                sizes.add(size.size)
+        return sorted(list(sizes))
 
 
 class ProductDetailSerializer(ProductListSerializer):

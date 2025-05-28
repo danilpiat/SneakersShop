@@ -1,4 +1,4 @@
-from django.db.models import Q
+from django.db.models import Q, Prefetch
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -36,7 +36,29 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
             except Category.DoesNotExist:
                 return queryset.none()
 
-        return queryset.prefetch_related('models', 'models__sizes', 'models__images')
+        brands = self.request.query_params.getlist('brand')
+        if brands:
+            queryset = queryset.filter(brand__slug__in=brands)
+
+        # Фильтрация по размерам
+        sizes = self.request.query_params.getlist('size')
+        if sizes:
+            # Преобразуем размеры в числа с плавающей точкой
+            try:
+                sizes_float = [float(size) for size in sizes]
+                queryset = queryset.filter(
+                    models__sizes__size__in=sizes_float
+                ).distinct()
+            except ValueError:
+                pass
+
+        return queryset.prefetch_related(
+            Prefetch('models', queryset=ProductModel.objects.filter(is_active=True).prefetch_related(
+                'sizes',
+                'images'
+            )),
+            'brand'
+        )
 
     @action(detail=True, methods=['get'])
     def models(self, request, pk=None):
@@ -44,3 +66,8 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
         models = product.models.filter(is_active=True)
         serializer = ProductModelSerializer(models, many=True)
         return Response(serializer.data)
+
+class BrandViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Brand.objects.filter(is_active=True)
+    serializer_class = BrandSerializer
+    pagination_class = None  # Отключаем пагинацию для брендов
