@@ -52,6 +52,20 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
             except ValueError:
                 pass
 
+        # Фильтрация по цене
+        min_price = self.request.query_params.get('min_price')
+        max_price = self.request.query_params.get('max_price')
+        if min_price and max_price:
+            try:
+                min_price_float = float(min_price)
+                max_price_float = float(max_price)
+                queryset = queryset.filter(
+                    base_price__gte=min_price_float,
+                    base_price__lte=max_price_float
+                )
+            except (TypeError, ValueError):
+                pass
+
         return queryset.prefetch_related(
             Prefetch('models', queryset=ProductModel.objects.filter(is_active=True).prefetch_related(
                 'sizes',
