@@ -55,7 +55,7 @@ class ProductModelInline(admin.StackedInline):
     model = ProductModel
     extra = 0
     show_change_link = True
-    fields = ('color', 'sku', 'price', 'is_active')
+    fields = ('color', 'sku', 'is_active')
 
 class ModelImageInline(admin.TabularInline):  # Переименовали ProductImageInline в ModelImageInline
     model = ModelImage  # Изменили модель
@@ -94,6 +94,7 @@ class ModelSizeInline(admin.TabularInline):
     model = ModelSize
     extra = 1
     min_num = 1
+    fields = ('size', 'price', 'stock')  # Добавляем поле price
 
 @admin.register(Brand)
 class BrandAdmin(admin.ModelAdmin):
@@ -111,7 +112,7 @@ class BrandAdmin(admin.ModelAdmin):
 
 @admin.register(ProductModel)
 class ProductModelAdmin(admin.ModelAdmin):
-    list_display = ('sku', 'product_link', 'color', 'price', 'stock_sum', 'is_active')
+    list_display = ('sku', 'product_link', 'color', 'min_price', 'max_price', 'stock_sum', 'is_active')
     list_filter = ('is_active', 'product')
     search_fields = ('sku', 'product__title', 'color')
     inlines = [ModelSizeInline, ModelImageInline]  # Используем новый ModelImageInline
@@ -125,6 +126,14 @@ class ProductModelAdmin(admin.ModelAdmin):
     def stock_sum(self, obj):
         return sum(obj.sizes.values_list('stock', flat=True))
     stock_sum.short_description = 'Общий остаток'
+
+    def min_price(self, obj):
+        return obj.min_price
+    min_price.short_description = 'Мин. цена'
+
+    def max_price(self, obj):
+        return obj.max_price
+    max_price.short_description = 'Макс. цена'
 
 @admin.register(ModelSize)
 class ModelSizeAdmin(admin.ModelAdmin):

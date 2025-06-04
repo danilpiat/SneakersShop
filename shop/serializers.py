@@ -37,16 +37,27 @@ class ModelImageSerializer(serializers.ModelSerializer):
 class ModelSizeSerializer(serializers.ModelSerializer):
     class Meta:
         model = ModelSize
-        fields = ('size', 'stock')
+        fields = ('size', 'stock', 'price')
 
 
 class ProductModelSerializer(serializers.ModelSerializer):
     sizes = ModelSizeSerializer(many=True)
     images = ModelImageSerializer(many=True)
 
+    min_price = serializers.DecimalField(  # Добавляем минимальную цену
+        max_digits=10,
+        decimal_places=2,
+        read_only=True
+    )
+    max_price = serializers.DecimalField(  # Добавляем максимальную цену
+        max_digits=10,
+        decimal_places=2,
+        read_only=True
+    )
+
     class Meta:
         model = ProductModel
-        fields = ('id', 'color', 'sku', 'price', 'sizes', 'images')
+        fields = ('id', 'color', 'sku', 'sizes', 'images', 'min_price', 'max_price')
 
 class BrandSerializer(serializers.ModelSerializer):
     logo = Base64ImageField()
@@ -88,11 +99,15 @@ class ProductListSerializer(serializers.ModelSerializer):
         return ModelImageSerializer(first_image).data['image'] if first_image else None
 
     def get_available_sizes(self, obj):
-        sizes = set()
+        sizes = []
         for product_model in obj.models.all():
             for size in product_model.sizes.all():
-                sizes.add(size.size)
-        return sorted(list(sizes))
+                sizes.append({
+                    'size': size.size,
+                    'price': size.price,
+                    'stock': size.stock
+                })
+        return sizes
 
 
 class ProductDetailSerializer(ProductListSerializer):

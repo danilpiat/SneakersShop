@@ -3,6 +3,7 @@ import uuid
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
 from django.core.validators import MinValueValidator
+from django.db.models.aggregates import Min, Max
 from mptt.models import MPTTModel, TreeForeignKey
 
 class Category(MPTTModel):
@@ -139,14 +140,19 @@ class ProductModel(models.Model):
         max_length=50,
         unique=True
     )
-    price = models.DecimalField(
-        max_digits=10,
-        decimal_places=2
-    )
     is_active = models.BooleanField(default=True)
 
     def __str__(self):
         return f"{self.product.title} - {self.color}"
+
+    @property
+    def min_price(self):
+        return self.sizes.aggregate(min_price=Min('price'))['min_price'] or 0
+
+    # Добавляем свойство для получения максимальной цены модели
+    @property
+    def max_price(self):
+        return self.sizes.aggregate(max_price=Max('price'))['max_price'] or 0
 
 
 class ModelSize(models.Model):
@@ -158,6 +164,11 @@ class ModelSize(models.Model):
     size = models.DecimalField(
         max_digits=4,
         decimal_places=1
+    )
+    price = models.DecimalField(  # Добавляем поле цены для каждого размера
+        max_digits=10,
+        decimal_places=2,
+        default=0
     )
     stock = models.PositiveIntegerField(
         default=0,
