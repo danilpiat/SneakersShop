@@ -25,6 +25,11 @@ class Category(MPTTModel):
         null=True,
         blank=True
     )
+    image = models.ImageField(
+        upload_to='category_images/',
+        null=True,
+        blank=True
+    )
     is_active = models.BooleanField(default=True)
 
     def get_level(self):

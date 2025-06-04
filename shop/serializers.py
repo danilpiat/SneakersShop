@@ -21,9 +21,11 @@ class CategorySerializer(serializers.ModelSerializer):
     parent_id = serializers.UUIDField(source='parent.id', allow_null=True)
     level = serializers.IntegerField(source='get_level')  # Используем метод get_level из MPTT
 
+    image = Base64ImageField(required=False, allow_null=True)
+
     class Meta:
         model = Category
-        fields = ('id', 'name', 'slug', 'parent_id', 'level', 'is_active')
+        fields = ('id', 'name', 'slug', 'parent_id', 'level', 'is_active', 'image')
 
 class ModelImageSerializer(serializers.ModelSerializer):
     image = Base64ImageField()

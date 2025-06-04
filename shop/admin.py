@@ -19,12 +19,16 @@ class CategoryAdmin(DraggableMPTTAdmin):
         'indented_title',
         'slug',
         'is_active',
-        'product_count'
+        'product_count',
+        'image_preview'  # Добавлено превью изображения
     )
     list_display_links = ('indented_title',)
     list_filter = ('is_active',)
     search_fields = ('name', 'slug')
     prepopulated_fields = {'slug': ('name',)}
+
+    fields = ('name', 'slug', 'parent', 'is_active', 'image')
+    readonly_fields = ('image_preview',)
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
@@ -32,6 +36,13 @@ class CategoryAdmin(DraggableMPTTAdmin):
 
     def product_count(self, instance):
         return instance.products.count()
+
+    def image_preview(self, obj):
+        if obj.image:
+            return format_html('<img src="{}" height="50" />', obj.image.url)
+        return "-"
+
+    image_preview.short_description = "Превью"
 
     product_count.short_description = 'Товаров в категории'
 
