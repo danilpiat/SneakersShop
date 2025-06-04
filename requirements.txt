@@ -5,4 +5,4 @@ psycopg2~=2.9.10
 django-extensions~=4.1
 django-admin-autocomplete-filter~=0.7.1
 pillow~=11.2.1
-django-cors-headers~=-4.7.0
+django-cors-headers~=4.7.0
