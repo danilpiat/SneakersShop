@@ -25,10 +25,10 @@ class CategorySerializer(serializers.ModelSerializer):
         model = Category
         fields = ('id', 'name', 'slug', 'parent_id', 'level', 'is_active')
 
-class ProductImageSerializer(serializers.ModelSerializer):
+class ModelImageSerializer(serializers.ModelSerializer):
     image = Base64ImageField()
     class Meta:
-        model = ProductImage
+        model = ModelImage
         fields = ('image', 'is_main', 'order_index')
 
 
@@ -40,7 +40,7 @@ class ModelSizeSerializer(serializers.ModelSerializer):
 
 class ProductModelSerializer(serializers.ModelSerializer):
     sizes = ModelSizeSerializer(many=True)
-    images = ProductImageSerializer(many=True)
+    images = ModelImageSerializer(many=True)
 
     class Meta:
         model = ProductModel
@@ -68,10 +68,22 @@ class ProductListSerializer(serializers.ModelSerializer):
         fields = ('id', 'title', 'slug', 'base_price', 'categories', 'main_image', 'brand', 'available_sizes')
 
     def get_main_image(self, obj):
-        main_image = obj.models.filter(images__is_main=True).first()
-        if main_image:
-            return ProductImageSerializer(main_image.images.first()).data
-        return None
+        if obj.image:
+            return Base64ImageField().to_representation(obj.image)
+
+        main_model_image = ModelImage.objects.filter(
+            model__product=obj,
+            is_main=True
+        ).first()
+
+        if main_model_image:
+            return ModelImageSerializer(main_model_image).data['image']
+
+        first_image = ModelImage.objects.filter(
+            model__product=obj
+        ).first()
+
+        return ModelImageSerializer(first_image).data['image'] if first_image else None
 
     def get_available_sizes(self, obj):
         sizes = set()

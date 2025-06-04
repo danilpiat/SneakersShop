@@ -90,6 +90,13 @@ class Product(models.Model):
         related_name='products',  # Добавляем related_name
         blank=True
     )
+
+    image = models.ImageField(  # Добавляем новое поле image
+        upload_to='product_images/',
+        null=True,
+        blank=True
+    )
+
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -159,7 +166,7 @@ class ModelSize(models.Model):
         return f"Size {self.size} - {self.model}"
 
 
-class ProductImage(models.Model):
+class ModelImage(models.Model):  # Переименовали ProductImage в ModelImage
     id = models.UUIDField(
         primary_key=True,
         default=uuid.uuid4,

@@ -12,8 +12,6 @@ class ProductFilter(AutocompleteFilter):
     title = 'Товар'
     field_name = 'product'
 
-
-
 @admin.register(Category)
 class CategoryAdmin(DraggableMPTTAdmin):
     list_display = (
@@ -48,36 +46,43 @@ class ProductModelInline(admin.StackedInline):
     show_change_link = True
     fields = ('color', 'sku', 'price', 'is_active')
 
-@admin.register(Product)
-class ProductAdmin(admin.ModelAdmin):
-    list_display = ('title', 'base_price', 'is_active', 'created_at')
-    list_filter = ('is_active', 'categories', 'brand')
-    search_fields = ('title', 'description', 'slug')
-    inlines = [ProductCategoryInline, ProductModelInline]
-    prepopulated_fields = {'slug': ('title',)}
-
-    fieldsets = (
-        (None, {
-            'fields': ('title', 'slug', 'description', 'brand')
-        }),
-        ('Цены и статус', {
-            'fields': ('base_price', 'is_active')
-        }),
-    )
-
-class ModelSizeInline(admin.TabularInline):
-    model = ModelSize
-    extra = 1
-    min_num = 1
-
-class ProductImageInline(admin.TabularInline):
-    model = ProductImage
+class ModelImageInline(admin.TabularInline):  # Переименовали ProductImageInline в ModelImageInline
+    model = ModelImage  # Изменили модель
     extra = 1
     readonly_fields = ('image_preview',)
 
     def image_preview(self, obj):
         return format_html('<img src="{}" height="100" />', obj.image.url) if obj.image else '-'
     image_preview.short_description = 'Превью'
+
+@admin.register(Product)
+class ProductAdmin(admin.ModelAdmin):
+    list_display = ('title', 'base_price', 'is_active', 'created_at', 'image_preview')
+    list_filter = ('is_active', 'categories', 'brand')
+    search_fields = ('title', 'description', 'slug')
+    inlines = [ProductCategoryInline, ProductModelInline]
+    prepopulated_fields = {'slug': ('title',)}
+    readonly_fields = ('image_preview',)
+
+    fieldsets = (
+        (None, {
+            'fields': ('title', 'slug', 'description', 'brand', 'image')  # Добавили поле image
+        }),
+        ('Цены и статус', {
+            'fields': ('base_price', 'is_active')
+        }),
+    )
+
+    def image_preview(self, obj):
+        if obj.image:
+            return format_html('<img src="{}" height="50" />', obj.image.url)
+        return "-"
+    image_preview.short_description = "Превью изображения"
+
+class ModelSizeInline(admin.TabularInline):
+    model = ModelSize
+    extra = 1
+    min_num = 1
 
 @admin.register(Brand)
 class BrandAdmin(admin.ModelAdmin):
@@ -98,11 +103,10 @@ class ProductModelAdmin(admin.ModelAdmin):
     list_display = ('sku', 'product_link', 'color', 'price', 'stock_sum', 'is_active')
     list_filter = ('is_active', 'product')
     search_fields = ('sku', 'product__title', 'color')
-    inlines = [ModelSizeInline, ProductImageInline]
+    inlines = [ModelSizeInline, ModelImageInline]  # Используем новый ModelImageInline
     autocomplete_fields = ['product']
 
     def product_link(self, obj):
-        # Исправлено имя URL-шаблона
         url = reverse('admin:shop_product_change', args=[obj.product.id])
         return format_html('<a href="{}">{}</a>', url, obj.product.title)
     product_link.short_description = 'Товар'
@@ -117,9 +121,9 @@ class ModelSizeAdmin(admin.ModelAdmin):
     search_fields = ('model__sku', 'size')
 
     def model_link(self, obj):
-        # Исправлено имя URL
         url = reverse('admin:shop_productmodel_change', args=[obj.model.id])
         return format_html('<a href="{}">{}</a>', url, obj.model.sku)
     model_link.short_description = 'Модель'
 
-admin.site.register(ProductImage)
+# Изменили регистрацию модели
+admin.site.register(ModelImage)

@@ -24,8 +24,9 @@ SECRET_KEY = 'django-insecure-j7e_jh26*%4yg1w=_xv^ttoo*b#bpb-5q(6nk!kd5-geh@(#sf
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
+CORS_ALLOW_ALL_ORIGINS = True
 ALLOWED_HOSTS = ["*"]
+
 
 
 # Application definition
@@ -41,7 +42,8 @@ INSTALLED_APPS = [
     'mptt',
     'shop',
     'django_extensions',
-    'rest_framework'
+    'rest_framework',
+    'corsheaders',
 
 ]
 INSTALLED_APPS += ['admin_auto_filters']
@@ -54,6 +56,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'SneakersShop.urls'
@@ -84,7 +87,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'sneakers-shop',
-        'USER': 'admin',
+        'USER': 'postgres',
         'PASSWORD': '0000',
         'HOST': 'localhost',
         'PORT': '5432',
