@@ -26,6 +26,15 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
         queryset = super().get_queryset()
         category_slug = self.request.query_params.get('category')
 
+        search_query = self.request.query_params.get('search')  # Новый параметр поиска
+
+        # Фильтрация по поисковому запросу
+        if search_query:
+            queryset = queryset.filter(
+                Q(title__icontains=search_query) |
+                Q(description__icontains=search_query)
+            )
+
         if category_slug:
             try:
                 category = Category.objects.get(slug=category_slug, is_active=True)
