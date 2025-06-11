@@ -51,8 +51,22 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
 
         # Фильтрация по размерам
         sizes = self.request.query_params.getlist('size')
-        if sizes:
-            # Преобразуем размеры в числа с плавающей точкой
+        # Фильтрация по наличию
+        in_stock = self.request.query_params.get('in_stock') == 'true'
+
+        # Если выбраны размеры И фильтр "В наличии"
+        if sizes and in_stock:
+            try:
+                sizes_float = [float(size) for size in sizes]
+                # Фильтруем по выбранным размерам и наличию именно этих размеров
+                queryset = queryset.filter(
+                    models__sizes__size__in=sizes_float,
+                    models__sizes__stock__gt=0
+                ).distinct()
+            except ValueError:
+                pass
+        # Если выбраны только размеры (без фильтра наличия)
+        elif sizes:
             try:
                 sizes_float = [float(size) for size in sizes]
                 queryset = queryset.filter(
@@ -60,6 +74,12 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
                 ).distinct()
             except ValueError:
                 pass
+        # Если выбран только фильтр "В наличии" (без конкретных размеров)
+        elif in_stock:
+            # Фильтруем товары с любым размером в наличии
+            queryset = queryset.filter(
+                models__sizes__stock__gt=0
+            ).distinct()
 
         # Фильтрация по цене
         min_price = self.request.query_params.get('min_price')
