@@ -30,6 +30,14 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
         search_query = self.request.query_params.get('search')  # Новый параметр поиска
         sort = self.request.query_params.get('ordering', 'default')
 
+        has_filters = (
+                category_slug is not None or
+                search_query is not None or
+                bool(self.request.query_params.getlist('brand')) or
+                bool(self.request.query_params.getlist('size')) or
+                'in_stock' in self.request.query_params
+        )
+
         # Фильтрация по поисковому запросу
         if search_query:
             queryset = queryset.filter(
@@ -83,26 +91,17 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
                 models__sizes__stock__gt=0
             ).distinct()
 
-        # Фильтрация по цене
-        min_price = self.request.query_params.get('min_price')
-        max_price = self.request.query_params.get('max_price')
-        if min_price and max_price:
-            try:
-                min_price_float = float(min_price)
-                max_price_float = float(max_price)
-                queryset = queryset.filter(
-                    base_price__gte=min_price_float,
-                    base_price__lte=max_price_float
-                )
-            except (TypeError, ValueError):
-                pass
-
-        if sort == 'base_price':
-            queryset = queryset.order_by('base_price')
-        elif sort == '-base_price':
-            queryset = queryset.order_by('-base_price')
-        elif sort == 'title':
-            queryset = queryset.annotate(lower_title=Lower('title')).order_by('lower_title')
+        if not has_filters and sort == 'default':
+            queryset = queryset.order_by('?')
+        else:
+            if sort == 'base_price':
+                queryset = queryset.order_by('base_price')
+            elif sort == '-base_price':
+                queryset = queryset.order_by('-base_price')
+            elif sort == 'title':
+                queryset = queryset.annotate(lower_title=Lower('title')).order_by('lower_title')
+            elif sort == 'default':
+                queryset = queryset.order_by('id')
 
         return queryset.prefetch_related(
             Prefetch('models', queryset=ProductModel.objects.filter(is_active=True).prefetch_related(
