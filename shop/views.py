@@ -1,4 +1,5 @@
 from django.db.models import Q, Prefetch
+from django.db.models.functions import Lower
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -27,6 +28,7 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
         category_slug = self.request.query_params.get('category')
 
         search_query = self.request.query_params.get('search')  # Новый параметр поиска
+        sort = self.request.query_params.get('ordering', 'default')
 
         # Фильтрация по поисковому запросу
         if search_query:
@@ -94,6 +96,13 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
                 )
             except (TypeError, ValueError):
                 pass
+
+        if sort == 'base_price':
+            queryset = queryset.order_by('base_price')
+        elif sort == '-base_price':
+            queryset = queryset.order_by('-base_price')
+        elif sort == 'title':
+            queryset = queryset.annotate(lower_title=Lower('title')).order_by('lower_title')
 
         return queryset.prefetch_related(
             Prefetch('models', queryset=ProductModel.objects.filter(is_active=True).prefetch_related(
