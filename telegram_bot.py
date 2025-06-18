@@ -22,8 +22,9 @@ logging.basicConfig(
 )
 logger = logging.getLogger("sneakerculture_bot")
 
-
-with open("bot_settings.json", "r", encoding="utf-8") as f:
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+BOT_SETTINGS_PATH = os.path.join(SCRIPT_DIR, "bot_settings.json")
+with open(BOT_SETTINGS_PATH, "r", encoding="utf-8") as f:
     config = json.load(f)
 
 API_TOKEN = config["API_TOKEN"]
