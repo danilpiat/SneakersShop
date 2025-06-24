@@ -247,7 +247,9 @@ async def web_app_data_handler(message: types.Message):
             f"{full_name}, ваш заказ успешно оформлен\n"
             "Наш менеджер свяжется с вами в ближайшее время для уточнения деталей\n\n"
             f"*Номер заказа:* {timestamp}\n"
-            f"*Сумма заказа:* {float(total_amount):.2f} руб\n"
+            f"*Сумма заказа:* {float(total_amount):.2f} руб\n\n"
+            f"*Состав заказа:*\n"
+
         )
         for item in items:
             user_message += (
@@ -256,6 +258,7 @@ async def web_app_data_handler(message: types.Message):
                 f"  Цвет: {item['color']}\n"
                 f"  Цена: {float(item['price']):.2f} руб × {item['quantity']} шт\n"
             )
+        user_message += "💰*Оплата*: \nПереводом на карту"
 
         logger.debug(f"User message before escape:\n{user_message}")
 
