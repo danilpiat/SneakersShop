@@ -30,6 +30,7 @@ with open(BOT_SETTINGS_PATH, "r", encoding="utf-8") as f:
 API_TOKEN = config["API_TOKEN"]
 WEBAPP_URL = config["WEBAPP_URL"]
 ADMIN_CHAT_ID = config["ADMIN_CHAT_ID"]
+MANAGER_CHAT_ID = config["MANAGER_CHAT_ID"]
 
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher()
@@ -125,7 +126,7 @@ async def start(message: types.Message):
     try:
         kb = [
             [types.KeyboardButton(text="🚀 Открыть магазин", web_app=WebAppInfo(url=WEBAPP_URL))],
-            [types.KeyboardButton(text="ℹ️ Помощь")],
+            [types.KeyboardButton(text="ℹ️ Консультация")],
         ]
         keyboard = ReplyKeyboardMarkup(
             keyboard=kb,
@@ -151,7 +152,8 @@ async def info(message: types.Message):
     try:
         await message.answer(
             "Это Telegram-бот магазина Sneaker Culture. "
-            "Нажмите кнопку '🚀 Открыть магазин' для запуска веб-приложения."
+            "Нажмите кнопку \n '🚀 Открыть магазин' для запуска веб-приложения."
+            "Для консультации или помощи можете обратиться @Manager_sneakerstore"
         )
         logger.debug("Help message sent")
 
@@ -240,6 +242,14 @@ async def web_app_data_handler(message: types.Message):
             disable_web_page_preview=True
         )
         logger.info(f"Admin message sent to chat {ADMIN_CHAT_ID}, message_id={admin_msg.message_id}")
+
+        manager_msg = await message.bot.send_message(
+            chat_id=MANAGER_CHAT_ID,
+            text=escaped_admin_message,
+            parse_mode="MarkdownV2",
+            disable_web_page_preview=True
+        )
+        logger.info(f"Admin message sent to chat {MANAGER_CHAT_ID}, message_id={manager_msg.message_id}")
 
         # Формируем сообщение для пользователя
         user_message = (
