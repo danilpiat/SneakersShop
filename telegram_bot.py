@@ -144,7 +144,7 @@ async def start(message: types.Message):
         logger.error(f"Error in start command: {e}\n{traceback.format_exc()}")
 
 
-@dp.message(F.text == "ℹ️ Помощь")
+@dp.message(F.text == "ℹ️ Консультация")
 async def info(message: types.Message):
     """Обработка кнопки помощи"""
     logger.info(f"Help requested by user_id={message.from_user.id}")
