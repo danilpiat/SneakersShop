@@ -235,21 +235,27 @@ async def web_app_data_handler(message: types.Message):
         logger.debug(f"Admin message after escape:\n{escaped_admin_message}")
 
         # Отправляем сообщение администратору
-        admin_msg = await message.bot.send_message(
-            chat_id=ADMIN_CHAT_ID,
-            text=escaped_admin_message,
-            parse_mode="MarkdownV2",
-            disable_web_page_preview=True
-        )
-        logger.info(f"Admin message sent to chat {ADMIN_CHAT_ID}, message_id={admin_msg.message_id}")
+        try:
+            admin_msg = await message.bot.send_message(
+                chat_id=ADMIN_CHAT_ID,
+                text=escaped_admin_message,
+                parse_mode="MarkdownV2",
+                disable_web_page_preview=True
+            )
+            logger.info(f"Admin message sent to chat {ADMIN_CHAT_ID}, message_id={admin_msg.message_id}")
+        except Exception as e:
+            logger.error(f"Failed to send message to admin {ADMIN_CHAT_ID}: {e}\n{traceback.format_exc()}")
 
-        manager_msg = await message.bot.send_message(
-            chat_id=MANAGER_CHAT_ID,
-            text=escaped_admin_message,
-            parse_mode="MarkdownV2",
-            disable_web_page_preview=True
-        )
-        logger.info(f"Admin message sent to chat {MANAGER_CHAT_ID}, message_id={manager_msg.message_id}")
+        try:
+            manager_msg = await message.bot.send_message(
+                chat_id=MANAGER_CHAT_ID,
+                text=escaped_admin_message,
+                parse_mode="MarkdownV2",
+                disable_web_page_preview=True
+            )
+            logger.info(f"Admin message sent to chat {MANAGER_CHAT_ID}, message_id={manager_msg.message_id}")
+        except Exception as e:
+            logger.error(f"Failed to send message to manager {MANAGER_CHAT_ID}: {e}\n{traceback.format_exc()}")
 
         # Формируем сообщение для пользователя
         user_message = (
@@ -278,11 +284,14 @@ async def web_app_data_handler(message: types.Message):
         logger.debug(f"User message after escape:\n{escaped_user_message}")
 
         # Отправляем подтверждение пользователю
-        user_msg = await message.answer(
-            text=escaped_user_message,
-            parse_mode="MarkdownV2"
-        )
-        logger.info(f"Confirmation sent to user {user_data['id']}, message_id={user_msg.message_id}")
+        try:
+            user_msg = await message.answer(
+                text=escaped_user_message,
+                parse_mode="MarkdownV2"
+            )
+            logger.info(f"Confirmation sent to user {user_data['id']}, message_id={user_msg.message_id}")
+        except Exception as e:
+            logger.error(f"Failed to send confirmation to user {user_data['id']}: {e}\n{traceback.format_exc()}")
 
         # Логируем успешную обработку
         logger.info(f"Order processed successfully for user_id={user_data['id']}")
