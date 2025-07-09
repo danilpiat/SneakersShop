@@ -329,21 +329,38 @@ async def main() -> None:
 
 
 if __name__ == "__main__":
-    # Создаем папку для логов, если ее нет
     os.makedirs("bot_logs", exist_ok=True)
 
-    # Настраиваем ротацию логов
-    from logging.handlers import RotatingFileHandler
+    from logging.handlers import TimedRotatingFileHandler
 
-    file_handler = RotatingFileHandler(
-        "bot_logs/bot.log",
-        maxBytes=5 * 1024 * 1024,  # 5 MB
-        backupCount=3
+    # Основной логгер
+    logger = logging.getLogger("sneakerculture_bot")
+    logger.setLevel(logging.DEBUG)
+
+    # Формат логов
+    log_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+    # Ежедневный файл логов с датой в названии
+    file_handler = TimedRotatingFileHandler(
+        filename="bot_logs/bot_%Y-%m-%d.log",
+        when="midnight",
+        interval=1,
+        backupCount=7,  # храним 7 последних логов
+        encoding="utf-8",
+        utc=False
     )
-    file_handler.setFormatter(logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-    ))
+    file_handler.setLevel(logging.DEBUG)
+    file_handler.setFormatter(log_formatter)
+
+    # Логирование в консоль
+    stream_handler = logging.StreamHandler()
+    stream_handler.setLevel(logging.INFO)
+    stream_handler.setFormatter(log_formatter)
+
+    # Очищаем дубли
+    logger.handlers.clear()
     logger.addHandler(file_handler)
+    logger.addHandler(stream_handler)
 
     # Запускаем бота
     asyncio.run(main())
