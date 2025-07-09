@@ -331,6 +331,9 @@ async def main() -> None:
 if __name__ == "__main__":
     os.makedirs("bot_logs", exist_ok=True)
 
+    log_date = datetime.now().strftime("%Y-%m-%d")
+    log_file_path = f"bot_logs/bot_{log_date}.log"
+
     from logging.handlers import TimedRotatingFileHandler
 
     # Основной логгер
@@ -342,7 +345,7 @@ if __name__ == "__main__":
 
     # Ежедневный файл логов с датой в названии
     file_handler = TimedRotatingFileHandler(
-        filename="bot_logs/bot_%Y-%m-%d.log",
+        filename=log_file_path,
         when="midnight",
         interval=1,
         backupCount=7,  # храним 7 последних логов
